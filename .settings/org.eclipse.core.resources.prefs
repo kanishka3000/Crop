@@ -1,0 +1,8 @@
+#Tue Nov 30 20:13:40 PST 2010
+eclipse.preferences.version=1
+encoding//src/lk/icta/schemas/xsd/crop/handler/v1/CropInfo.java=UTF-8
+encoding//src/lk/icta/schemas/xsd/crop/handler/v1/CropServiceProxy.java=UTF-8
+encoding//src/lk/icta/schemas/xsd/crop/handler/v1/CropServiceProxyLocator.java=UTF-8
+encoding//src/lk/icta/schemas/xsd/crop/handler/v1/CropServiceProxyPortType.java=UTF-8
+encoding//src/lk/icta/schemas/xsd/crop/handler/v1/CropServiceProxySoap11BindingStub.java=UTF-8
+encoding//src/lk/icta/schemas/xsd/crop/handler/v1/CropServiceProxySoap12BindingStub.java=UTF-8
