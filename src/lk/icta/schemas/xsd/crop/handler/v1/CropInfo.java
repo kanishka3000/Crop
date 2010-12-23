@@ -8,14 +8,24 @@
 package lk.icta.schemas.xsd.crop.handler.v1;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import util.Connection;
 
 public class CropInfo implements java.io.Serializable {
 	private java.lang.String name;
-	public static int CROPTYPE_LOCATION = 1;
-	public static int CROPTYPE_CROP = 0;
+	public static final int CROPTYPE_LOCATION = 1;
+	public static final int CROPTYPE_CROP = 2;
+	public static final int CROPTYPE_PRICE = 4;
+	public static final int CROPTYPE_CROP_LOCATION = 3;
+	public static final int CROPTYPE_CROP_LOCATION_PRICE = 7;
+
+	public static final int LISTTYPE_LOCATION = 8;
+	public static final int LISTTYPE_CROP = 9;
+	
+	public static final int PRICE_LARGERTHAN=0;
+	public static final int PRICE_LESSTHAN=1;
 	private java.math.BigDecimal price;
 	private Connection connection = null;
 
@@ -25,15 +35,95 @@ public class CropInfo implements java.io.Serializable {
 
 	}
 
-	public ArrayList getCrops(int type, String id) throws Exception {
-		connection = new Connection();
-		String query;
-		if (type == CROPTYPE_CROP) {
-			query = "select * from locationprice where cropid='" + id + "'";
+	public ArrayList<String> getList(int type) throws Exception {
+		String query = null;
+		ArrayList<String> list = null;
+		if (type == LISTTYPE_LOCATION) {
+			query = "select * from location";
+			connection = new Connection();
+			ResultSet rs = connection.executeQuery(query);
+			list = filllistlocation(rs);
 		} else {
-			query = "select * from locationprice where location='" + id + "'";
-
+			query = "select * from crop";
+			connection = new Connection();
+			ResultSet rs = connection.executeQuery(query);
+			list = filllistCrop(rs);
 		}
+
+		connection.close();
+		connection = null;
+		return list;
+	}
+
+	private ArrayList<String> filllistCrop(ResultSet rs) throws SQLException {
+		ArrayList<String> list;
+		list = new ArrayList();
+		while (rs.next()) {
+			String id = rs.getString("cropid");
+			String name = rs.getString("cropname");
+			list.add(id);
+			list.add(name);
+		}
+		return list;
+	}
+
+	private ArrayList<String> filllistlocation(ResultSet rs)
+			throws SQLException {
+		ArrayList<String> list = new ArrayList<String>();
+		while (rs.next()) {
+			String re = rs.getString("location");
+			list.add(re);
+		}
+		return list;
+	}
+
+	public ArrayList getCrops(int type, String[] cropvalue,
+			String[] locationvalue, String pricevalue,int pricetype) throws Exception {
+		connection = new Connection();
+		String query = "select * from locationprice";
+
+		if (type == CROPTYPE_CROP) {
+			String id = "";
+			id = breaktoarray(cropvalue, id);
+			query += "where cropid in( " + id + " )";
+			System.out.println(query);
+		} else if (type == CROPTYPE_LOCATION) {
+
+			String id = "";
+			id = breaktoarray(locationvalue, id);
+
+			query += " where location in ( " + id + " ) ";
+
+		}else if(type==CROPTYPE_CROP_LOCATION){
+			String id1="";
+			String id2="";
+			id1=breaktoarray(cropvalue, id1);
+			id2=breaktoarray(locationvalue, id2);
+			query+=" where location in ("+id2+") and cropid in ( "+id1+" )";
+		}else if(type==CROPTYPE_PRICE){
+			
+			query+=" and price ";
+			if(pricetype==CropInfo.PRICE_LESSTHAN){
+				query+=" < ";
+			}else{
+				query+=" > ";
+			}
+			query+=pricevalue+" ";
+		}else if(type==CROPTYPE_CROP_LOCATION_PRICE){
+			String id1="";
+			String id2="";
+			id1=breaktoarray(cropvalue, id1);
+			id2=breaktoarray(locationvalue, id2);
+			query+=" where location in ("+id2+") and cropid in ( "+id1+" ) and price ";
+			if(pricetype==CropInfo.PRICE_LESSTHAN){
+				query+=" < ";
+			}else{
+				query+=" > ";
+			}
+			query+=pricevalue+" ";
+			
+		}
+		System.out.println(query);
 		ResultSet rs = connection.executeQuery(query);
 		ArrayList list = new ArrayList();
 		while (rs.next()) {
@@ -43,7 +133,21 @@ public class CropInfo implements java.io.Serializable {
 			cr.setPrice(new java.math.BigDecimal(rs.getString("price")));
 			list.add(cr);
 		}
+		connection.close();
+		connection = null;
 		return list;
+	}
+
+	private String breaktoarray(String[] cropvalue, String id) {
+		int i=0;
+		for (String s : cropvalue) {
+			id += "'" + s + "'";
+			if(i!=cropvalue.length-1){
+				id+=" , ";
+			}
+			i++;
+		}
+		return id;
 	}
 
 	public CropInfo(java.lang.String name, java.math.BigDecimal price,

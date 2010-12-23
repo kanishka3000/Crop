@@ -7,6 +7,6 @@
 <title>Insert title here</title>
 </head>
 <body>
-<a href="getCropService?service=location&id=Dambulla">aaa</a>
+<a href="getCropService?crop=CRT,CNT&location=Dambulla">aaa</a>
 </body>
 </html>

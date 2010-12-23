@@ -9,10 +9,10 @@ public class Connection {
 	java.sql.Statement statement;
 
 	public Connection() throws Exception {
-		
+		CProperties pr=CProperties.getInstance();
 		Class.forName("org.sqlite.JDBC");
 		conn = DriverManager
-				.getConnection("jdbc:sqlite:D:\\workspace\\myaxis\\crops.db");
+				.getConnection("jdbc:sqlite:"+pr.getProperty("dbpath"));
 		statement = conn.createStatement();
 	}
 
@@ -30,6 +30,10 @@ public class Connection {
 	public void execute(String query) throws Exception{
 		// TODO Auto-generated method stub
 		statement.executeUpdate(query);
+	}
+	public void close()throws Exception{
+		statement.close();
+		conn.close();
 	}
 
 }

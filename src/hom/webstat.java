@@ -3,6 +3,8 @@ package hom;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import util.Connection;
 
@@ -27,15 +29,22 @@ public class webstat {
 		query="delete from locationprice";
 		conn.execute(query);
 		CropInfo[] crops;
+		Set<String> locationSet=new HashSet<String>();
 		for (String s : list) {
 			crops = cst.getCropDataList(s);
 			for (CropInfo crop : crops) {
-				query="insert into locationprice(cropid,location,price) values ('"+s+"','"+crop.getLocation()+"','"+crop.getPrice()+"')";
+				locationSet.add(crop.getLocation());
+				query="insert into locationprice(cropid,location,price) values ('"+s.trim()+"','"+crop.getLocation().trim()+"','"+crop.getPrice()+"')";
 				System.out.println(crop.getName() + "==" + crop.getPrice()
 						+ crop.getLocation());
 				conn.execute(query);
 			}
 		}
+		for(String va:locationSet){
+			query="insert into location(location) values('"+va.trim()+"')";
+			conn.execute(query);
+		}
+		conn.close();
 
 	}
 }
