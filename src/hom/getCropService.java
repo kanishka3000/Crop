@@ -149,6 +149,7 @@ public class getCropService extends HttpServlet {
 			resut += "<crop>";
 			resut += "<location>" + infoin.getLocation() + "</location>";
 			resut += "<price>" + infoin.getPrice() + "</price>";
+			resut += "<id>"+ infoin.getId()+"</id>";
 			resut += "<name>" + infoin.getName() + "</name>";
 			resut += "</crop>";
 		}

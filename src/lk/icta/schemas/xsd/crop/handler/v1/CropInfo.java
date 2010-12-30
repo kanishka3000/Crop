@@ -23,11 +23,20 @@ public class CropInfo implements java.io.Serializable {
 
 	public static final int LISTTYPE_LOCATION = 8;
 	public static final int LISTTYPE_CROP = 9;
-	
-	public static final int PRICE_LARGERTHAN=0;
-	public static final int PRICE_LESSTHAN=1;
+
+	public static final int PRICE_LARGERTHAN = 0;
+	public static final int PRICE_LESSTHAN = 1;
 	private java.math.BigDecimal price;
 	private Connection connection = null;
+	String id;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	private java.lang.String location;
 
@@ -49,7 +58,6 @@ public class CropInfo implements java.io.Serializable {
 			ResultSet rs = connection.executeQuery(query);
 			list = filllistCrop(rs);
 		}
-
 		connection.close();
 		connection = null;
 		return list;
@@ -78,57 +86,91 @@ public class CropInfo implements java.io.Serializable {
 	}
 
 	public ArrayList getCrops(int type, String[] cropvalue,
-			String[] locationvalue, String pricevalue,int pricetype) throws Exception {
+			String[] locationvalue, String pricevalue, int pricetype)
+			throws Exception {
 		connection = new Connection();
-		String query = "select * from locationprice";
+		String query = "select  locationprice.cropid as crop_id,cropname,location,price from locationprice";
 
 		if (type == CROPTYPE_CROP) {
 			String id = "";
 			id = breaktoarray(cropvalue, id);
-			query += "where cropid in( " + id + " )";
+			query += " left join crop on locationprice.cropid= trim(crop.cropid) where locationprice.cropid in( "
+					+ id + " ) ";
 			System.out.println(query);
 		} else if (type == CROPTYPE_LOCATION) {
 
 			String id = "";
 			id = breaktoarray(locationvalue, id);
 
-			query += " where location in ( " + id + " ) ";
+			query += " left join crop on locationprice.cropid=trim(crop.cropid) where location in ( "
+					+ id + " )  ";
 
-		}else if(type==CROPTYPE_CROP_LOCATION){
-			String id1="";
-			String id2="";
-			id1=breaktoarray(cropvalue, id1);
-			id2=breaktoarray(locationvalue, id2);
-			query+=" where location in ("+id2+") and cropid in ( "+id1+" )";
-		}else if(type==CROPTYPE_PRICE){
-			
-			query+=" and price ";
-			if(pricetype==CropInfo.PRICE_LESSTHAN){
-				query+=" < ";
-			}else{
-				query+=" > ";
+		} else if (type == CROPTYPE_CROP_LOCATION) {
+			String id1 = "";
+			String id2 = "";
+			id1 = breaktoarray(cropvalue, id1);
+			id2 = breaktoarray(locationvalue, id2);
+			query += " left join crop on locationprice.cropid=trim(crop.cropid) where location in ("
+					+ id2 + ") and locationprice.cropid in ( " + id1 + " ) ";
+		} else if (type == CROPTYPE_PRICE) {
+
+			query += " where price ";
+			if (pricetype == CropInfo.PRICE_LESSTHAN) {
+				query += " < ";
+			} else {
+				query += " > ";
 			}
-			query+=pricevalue+" ";
-		}else if(type==CROPTYPE_CROP_LOCATION_PRICE){
-			String id1="";
-			String id2="";
-			id1=breaktoarray(cropvalue, id1);
-			id2=breaktoarray(locationvalue, id2);
-			query+=" where location in ("+id2+") and cropid in ( "+id1+" ) and price ";
-			if(pricetype==CropInfo.PRICE_LESSTHAN){
-				query+=" < ";
-			}else{
-				query+=" > ";
+			query += pricevalue + " ";
+		} else if (type == CROPTYPE_CROP_LOCATION_PRICE) {
+			String id1 = "";
+			String id2 = "";
+			id1 = breaktoarray(cropvalue, id1);
+			id2 = breaktoarray(locationvalue, id2);
+			query += " left join crop on locationprice.cropid=trim(crop.cropid) where location in ("
+					+ id2
+					+ ") and locationprice.cropid in ( "
+					+ id1
+					+ " ) and price ";
+			if (pricetype == CropInfo.PRICE_LESSTHAN) {
+				query += " < ";
+			} else {
+				query += " > ";
 			}
-			query+=pricevalue+" ";
-			
+			query += pricevalue + " ";
+
+		} else if (type == (CROPTYPE_CROP + CROPTYPE_PRICE)) {
+			String id = "";
+			id = breaktoarray(cropvalue, id);
+			query += " left join crop on locationprice.cropid=trim(crop.cropid) where locationprice.cropid in( "
+					+ id + " ) and ";
+			query += "  price ";
+			if (pricetype == CropInfo.PRICE_LESSTHAN) {
+				query += " < ";
+			} else {
+				query += " > ";
+			}
+			query += pricevalue + " ";
+		} else if (type == CROPTYPE_LOCATION + CROPTYPE_PRICE) {
+			String id = "";
+			id = breaktoarray(locationvalue, id);
+			query += " left join crop on locationprice.cropid=trim(crop.cropid) where location in ( "
+					+ id + " ) and ";
+			query += "  price ";
+			if (pricetype == CropInfo.PRICE_LESSTHAN) {
+				query += " < ";
+			} else {
+				query += " > ";
+			}
+			query += pricevalue + " ";
+
 		}
 		System.out.println(query);
 		ResultSet rs = connection.executeQuery(query);
 		ArrayList list = new ArrayList();
 		while (rs.next()) {
 			CropInfo cr = new CropInfo();
-			cr.setName(rs.getString("cropid"));
+			cr.setId(rs.getString("crop_id"));
+			cr.setName(rs.getString("cropname"));
 			cr.setLocation(rs.getString("location"));
 			cr.setPrice(new java.math.BigDecimal(rs.getString("price")));
 			list.add(cr);
@@ -139,11 +181,11 @@ public class CropInfo implements java.io.Serializable {
 	}
 
 	private String breaktoarray(String[] cropvalue, String id) {
-		int i=0;
+		int i = 0;
 		for (String s : cropvalue) {
 			id += "'" + s + "'";
-			if(i!=cropvalue.length-1){
-				id+=" , ";
+			if (i != cropvalue.length - 1) {
+				id += " , ";
 			}
 			i++;
 		}
