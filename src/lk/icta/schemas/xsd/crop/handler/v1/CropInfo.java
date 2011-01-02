@@ -114,7 +114,7 @@ public class CropInfo implements java.io.Serializable {
 					+ id2 + ") and locationprice.cropid in ( " + id1 + " ) ";
 		} else if (type == CROPTYPE_PRICE) {
 
-			query += " where price ";
+			query += " left join crop on locationprice.cropid=trim(crop.cropid) where price ";
 			if (pricetype == CropInfo.PRICE_LESSTHAN) {
 				query += " < ";
 			} else {
